@@ -13,7 +13,8 @@
 <body>	
 	<div class="nk-container">
 		<!-- 头部 -->
-		<header class="bg-dark sticky-top">
+		<!-- 2.2-3 -->
+		<header class="bg-dark sticky-top" th:fragment="header">
 			<div class="container">
 				<!-- 导航 -->
 				<nav class="navbar navbar-expand-lg navbar-dark">
@@ -26,33 +27,37 @@
 					<div class="collapse navbar-collapse" id="navbarSupportedContent">
 						<ul class="navbar-nav mr-auto">
 							<li class="nav-item ml-3 btn-group-vertical">
-								<a class="nav-link" href="index.html">首页</a>
+								<!-- 2.2-3 -->
+								<a class="nav-link" th:href="@{/index}">首页</a>
 							</li>
-							<li class="nav-item ml-3 btn-group-vertical">
-								<a class="nav-link position-relative" href="site/letter.html">消息<span class="badge badge-danger">12</span></a>
+							<li class="nav-item ml-3 btn-group-vertical" th:if="${loginUser!=null}">
+								<a class="nav-link position-relative" th:href="@{/letter/list}">消息
+									<span class="badge badge-danger" th:text="${allUnreadCount!=0?allUnreadCount:''}">12</span>
+								</a>
 							</li>
-							<li class="nav-item ml-3 btn-group-vertical">
-								<a class="nav-link" href="site/register.html">注册</a>
+							<li class="nav-item ml-3 btn-group-vertical" th:if="${loginUser==null}">
+								<a class="nav-link" th:href="@{/register}">注册</a>
 							</li>
-							<li class="nav-item ml-3 btn-group-vertical">
-								<a class="nav-link" href="site/login.html">登录</a>
+							<li class="nav-item ml-3 btn-group-vertical" th:if="${loginUser==null}">
+								<a class="nav-link" th:href="@{/login}">登录</a>
 							</li>
-							<li class="nav-item ml-3 btn-group-vertical dropdown">
+							<!-- 如果登录的用户即loginUser不为空，显示用户信息，对应头像，对应账号 -->
+							<li class="nav-item ml-3 btn-group-vertical dropdown" th:if="${loginUser!=null}">
 								<a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-									<img src="http://images.nowcoder.com/head/1t.png" class="rounded-circle" style="width:30px;"/>
+									<img th:src="${loginUser.headerUrl}" class="rounded-circle" style="width:30px;"/>
 								</a>
 								<div class="dropdown-menu" aria-labelledby="navbarDropdown">
-									<a class="dropdown-item text-center" href="site/profile.html">个人主页</a>
-									<a class="dropdown-item text-center" href="site/setting.html">账号设置</a>
-									<a class="dropdown-item text-center" href="site/login.html">退出登录</a>
+									<a class="dropdown-item text-center" th:href="@{|/user/profile/${loginUser.id}|}">个人主页</a>
+									<a class="dropdown-item text-center" th:href="@{/user/setting}">账号设置</a>
+									<a class="dropdown-item text-center" th:href="@{/logout}">退出登录</a>
 									<div class="dropdown-divider"></div>
-									<span class="dropdown-item text-center text-secondary">com</span>
+									<span class="dropdown-item text-center text-secondary" th:utext="${loginUser.username}">com</span>
 								</div>
 							</li>
 						</ul>
 						<!-- 搜索 -->
-						<form class="form-inline my-2 my-lg-0" action="site/search.html">
-							<input class="form-control mr-sm-2" type="search" aria-label="Search" />
+						<form class="form-inline my-2 my-lg-0" method="get" th:action="@{/search}">
+							<input class="form-control mr-sm-2" type="search" aria-label="Search" name="keyword" th:value="${keyword}"/>
 							<button class="btn btn-outline-light my-2 my-sm-0" type="submit">搜索</button>
 						</form>
 					</div>
@@ -67,13 +72,15 @@
 					<!-- 筛选条件 -->
 					<ul class="nav nav-tabs mb-3">
 						<li class="nav-item">
-							<a class="nav-link active" href="#">最新</a>
+							<a th:class="|nav-link ${orderMode==0?'active':''}|" th:href="@{/index(orderMode=0)}">最新</a>
 						</li>
 						<li class="nav-item">
-							<a class="nav-link" href="#">最热</a>
+							<a th:class="|nav-link ${orderMode==1?'active':''}|" th:href="@{/index(orderMode=1)}">最热</a>
 						</li>
 					</ul>
-					<button type="button" class="btn btn-primary btn-sm position-absolute rt-0" data-toggle="modal" data-target="#publishModal">我要发布</button>
+					<button type="button" class="btn btn-primary btn-sm position-absolute rt-0"
+							th:if="${loginUser!=null}"
+							data-toggle="modal" data-target="#publishModal">我要发布</button>
 				</div>
 				<!-- 弹出框 -->
 				<div class="modal fade" id="publishModal" tabindex="-1" role="dialog" aria-labelledby="publishModalLabel" aria-hidden="true">
@@ -123,14 +130,14 @@
 				<ul class="list-unstyled">
 					<!-- 3.1 帖子列表 -->
 					<li class="media pb-3 pt-3 mb-3 border-bottom" th:each="map:${discussPosts}">
-						<a href="site/profile.html">
+						<a th:href="@{|/user/profile/${map.user.id}|}">
 							<!-- 3.2 用户头像 -->
 							<img th:src="${map.user.headerUrl}" class="mr-4 rounded-circle" alt="用户头像" style="width:50px;height:50px;">
 						</a>
 						<div class="media-body">
 							<h6 class="mt-0 mb-3">
 								<!-- 3.3 帖子标题,注意 utext 可以处理转义字符 -->
-								<a href="#" th:utext="${map.post.title}">备战春招，面试刷题跟他复习，一个月全搞定！</a>
+								<a th:href="@{|/detail/${map.post.id}|}" th:utext="${map.post.title}">备战春招，面试刷题跟他复习，一个月全搞定！</a>
 								<!-- 3.4 帖子类型 -->
 								<span class="badge badge-secondary bg-primary" th:if="${map.post.type==1}">置顶</span>
 								<!-- 3.5 帖子状态 -->
@@ -140,9 +147,12 @@
 								<!-- 3.6 用户名 & 发帖时间，注意 utext 可以处理转义字符 -->
 								<u class="mr-3" th:utext="${map.user.username}">寒江雪</u> 发布于 <b th:text="${#dates.format(map.post.createTime, 'yyyy-MM-dd HH:mm:ss')}">2019-04-15 15:32:18</b>
 								<ul class="d-inline float-right">
-									<li class="d-inline ml-2">赞 11</li>
+									<li class="d-inline ml-2">
+										<b>赞</b>
+										<i th:text="${map.likeCount}">11</i>
+									</li>
 									<li class="d-inline ml-2">|</li>
-									<li class="d-inline ml-2">回帖 7</li>
+									<li class="d-inline ml-2">回帖 <span th:text="${map.post.commentCount}">7</span></li>
 								</ul>
 							</div>
 						</div>						
@@ -151,7 +161,7 @@
 				<!-- 分页 -->
 				<!-- 4.分页逻辑 -->
 				<!-- 4.1 帖子数量-->
-				<nav class="mt-5" th:if="${page.rows>0}">
+				<nav class="mt-5" th:if="${page.rows>0}" th:fragment="pagination">
 					<ul class="pagination justify-content-center">
 						<!-- 4.2 首页按钮 -->
 						<li class="page-item"><a class="page-link" th:href="@{${page.path}(current=1)}">首页</a></li>
@@ -162,7 +172,7 @@
 						</li>
 						<!-- 4.5 当前页 -->
 						<li th:class="|page-item ${page.current==i?'active':''}|" th:each="i:${#numbers.sequence(page.from, page.to)}">
-							<a class="page-link" href="#" th:text="${i}">1</a>
+							<a class="page-link" th:href="@{${page.path}(current=${i})}" th:text="${i}">1</a>
 						</li>
 						<!-- 下一页 -->
 						<li th:class="|page-item ${page.current==page.total?'disabled':''}|">

@@ -2,6 +2,7 @@ package com.nowcoder.community.dao;
 
 import org.apache.ibatis.annotations.Mapper;
 import com.nowcoder.community.pojo.User;
+import org.springframework.stereotype.Repository;
 
 @Mapper
 public interface UserMapper {
